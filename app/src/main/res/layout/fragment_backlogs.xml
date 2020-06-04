@@ -11,9 +11,11 @@
         android:id="@+id/expandableListView"
         android:layout_width="354dp"
         android:layout_height="match_parent"
+        android:layout_margin="20dp"
         android:divider="@android:color/darker_gray"
-        android:dividerHeight="0.5dp"
+        android:dividerHeight="1dp"
         android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft"
-        android:layout_margin="20dp" />
+        tools:layout_height="match_parent"
+        tools:minHeight="25dp" />
 
 </FrameLayout>

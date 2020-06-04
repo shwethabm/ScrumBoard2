@@ -7,16 +7,36 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import java.util.HashMap;
 import java.util.List;
 import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.BaseExpandableListAdapter;
+import android.os.Bundle;
+import android.view.View;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.PopupMenu;
+import android.widget.Toast;
+import android.view.MenuItem;
+import android.widget.Toast;
+import android.widget.EditText;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import android.widget.ExpandableListView;
+import android.widget.ListView;
 
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.TextView;
+import android.widget.AdapterView.OnItemLongClickListener ;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -72,9 +92,61 @@ public class Doing extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v= inflater.inflate(R.layout.fragment_doing, container, false);
-        ExpandableListView elv = (ExpandableListView) v.findViewById(R.id.expandableListView);
-        elv.setAdapter(new Doing.SavedTabsListAdapter());
+        final View v= inflater.inflate(R.layout.fragment_doing, container, false);
+        final ExpandableListView elv = (ExpandableListView) v.findViewById(R.id.expandableListView);
+        final SavedTabsListAdapter adapt = new SavedTabsListAdapter();
+        elv.setAdapter(adapt);
+        elv.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(final AdapterView<?> parent, final View view, int position, final long id) {
+                // if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                final int groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                final int childPosition = ExpandableListView.getPackedPositionChild(id);
+
+                // You now have everything that you would as if this was an OnChildClickListener()
+                // Add your logic here.
+                PopupMenu popup = new PopupMenu(view.getContext(), v);
+                popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Toast.makeText(view.getContext(),"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                        switch(item.getItemId()) {
+                            case R.id.edit:
+                                LayoutInflater inflater = LayoutInflater.from(Doing.this.getContext());
+                                final View yourCustomView = inflater.inflate(R.layout.dialogue_box, null);
+
+                                final TextView etName = (EditText) yourCustomView.findViewById(R.id.txtSub);
+                                AlertDialog dialog = new AlertDialog.Builder(Doing.this.getContext())
+                                        .setTitle("Enter task/user:")
+                                        .setView(yourCustomView)
+                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+                                                if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                                                    adapt.children[groupPosition][childPosition] = etName.getText().toString();
+                                                } else {
+                                                    adapt.groups[groupPosition] = etName.getText().toString();
+                                                }
+                                            }
+                                        })
+                                        .setNegativeButton("Cancel", null).create();
+                                dialog.show();
+                                break;
+                        }
+                        return true;
+                    }
+                });
+                popup.show();
+                // Return true as we are handling the event.
+                return true;
+                // }
+
+                //return false;
+            }
+        });
+        String value = getArguments().getString("message");
+        final int pos=getArguments().getInt("group");
+        final int cpos=getArguments().getInt("child");
+        adapt.children[pos][cpos]=value;
         return v;
     }
 
@@ -115,14 +187,16 @@ public class Doing extends Fragment {
     }
     public class SavedTabsListAdapter extends BaseExpandableListAdapter {
 
-        private String[] groups = { "People Names", "Dog Names", "Cat Names", "Fish Names" };
+        public String[] groups = { "Employee1", "Employee2", "Employee3", "Employee4","Employee5" };
 
-        private String[][] children = {
-                { "Arnold", "Barry", "Chuck", "David" },
-                { "Ace", "Bandit", "Cha-Cha", "Deuce" },
-                { "Fluffy", "Snuggles" },
-                { "Goldy", "Bubbles" }
+        public String[][] children ={
+                { "Subtask1", "Subtask2", "Subtask3", "Subtask4" },
+                { "Subtask1", "Subtask2", "Subtask3", "Subtask4" },
+                { "Subtask1", "Subtask2", "Subtask3", "Subtask4" },
+                { "Subtask1", "Subtask2", "Subtask3", "Subtask4"},
+                { "Subtask1", "Subtask2", "Subtask3", "Subtask4" }
         };
+
 
         @Override
         public int getGroupCount() {
@@ -164,7 +238,8 @@ public class Doing extends Fragment {
             TextView textView = new TextView(Doing.this.getActivity());
             textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
             textView.setText(getGroup(i).toString());
-
+            textView.setTextSize(21);
+            textView.setPadding(0, 15, 0, 15);
             return textView;
         }
 
@@ -172,6 +247,8 @@ public class Doing extends Fragment {
         public View getChildView(int i, int i1, boolean b, View view, ViewGroup viewGroup) {
             TextView textView = new TextView(Doing.this.getActivity());
             textView.setText(getChild(i, i1).toString());
+            textView.setTextSize(20);
+            textView.setPadding(0, 15, 0, 15);
             return textView;
         }
 
